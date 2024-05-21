@@ -1,2 +1,8 @@
 git+https://github.com/shill1729/alphavantage.git
 scipy
+quadprog
+finnhub-python
+scikit-learn
+numpy
+streamlit
+pandas
