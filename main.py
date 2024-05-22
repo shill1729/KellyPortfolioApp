@@ -143,28 +143,55 @@ if __name__ == "__main__":
             market_status = "Bull Market" if bull_allocations > 0.5 else "Bear Market"
             st.markdown(f"### Market Regime: **{market_status}**")
 
+        # st.write("## EWMA-GBM Allocations")
+        # if is_beta_hedge:
+        #     display_assets = [asset for asset in symbols if asset != "SPY"]
+        # else:
+        #     display_assets = symbols
+        # allocations = {asset: f"{w[i]:.2%}" for i, asset in enumerate(display_assets) if np.abs(w[i]) > 0.001}
+        # st.table(pd.DataFrame(list(allocations.items()), columns=['Asset', 'Allocation']))
+        #
+        # VaR = norm.ppf(0.001, loc=(mu - 0.5 * sigma ** 2) * st.session_state.timescale,
+        #                scale=sigma * np.sqrt(st.session_state.timescale))
+        #
+        # total = -bankroll / VaR
+        # st.write("## Dollar amounts to hold")
+        # dollar_amounts = {asset: round(total * w[i], 2) for i, asset in enumerate(display_assets) if
+        #                   np.abs(w[i]) > 0.001}
+        # st.table(pd.DataFrame(list(dollar_amounts.items()), columns=['Asset', 'Dollar Amount']))
         st.write("## EWMA-GBM Allocations")
+
         if is_beta_hedge:
             display_assets = [asset for asset in symbols if asset != "SPY"]
         else:
             display_assets = symbols
+
         allocations = {asset: f"{w[i]:.2%}" for i, asset in enumerate(display_assets) if np.abs(w[i]) > 0.001}
-        st.table(pd.DataFrame(list(allocations.items()), columns=['Asset', 'Allocation']))
 
         VaR = norm.ppf(0.001, loc=(mu - 0.5 * sigma ** 2) * st.session_state.timescale,
                        scale=sigma * np.sqrt(st.session_state.timescale))
 
         total = -bankroll / VaR
-        st.write("## Dollar amounts to hold")
+
         dollar_amounts = {asset: round(total * w[i], 2) for i, asset in enumerate(display_assets) if
                           np.abs(w[i]) > 0.001}
-        st.table(pd.DataFrame(list(dollar_amounts.items()), columns=['Asset', 'Dollar Amount']))
 
-        data = {
+        # Combine allocations and dollar amounts into a single dataframe
+        allocation_output = {
+            'Asset': list(allocations.keys()),
+            'Allocation': list(allocations.values()),
+            'Dollar Amount': [dollar_amounts[asset] for asset in allocations.keys()]
+        }
+
+        allocation_output = pd.DataFrame(allocation_output)
+
+        st.table(allocation_output)
+
+        metric_data = {
             "Metric": ["Optimal growth rate", "Annual Drift", "Annual Volatility", "99.9% Daily Value at Risk"],
             "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4)]
         }
 
-        df = pd.DataFrame(data)
+        metric_data = pd.DataFrame(metric_data)
         # display the table
-        st.table(df)
+        st.table(metric_data)
