@@ -153,10 +153,13 @@ if __name__ == "__main__":
 
         VaR = norm.ppf(0.001, loc=(mu - 0.5 * sigma ** 2) * st.session_state.timescale,
                        scale=sigma * np.sqrt(st.session_state.timescale))
-        # st.markdown(f"### Optimal growth rate: **{round(g, 6)}**")
-        # st.markdown(f"### Annual Drift: **{round(mu, 4)}**")
-        # st.markdown(f"### Annual Volatility: **{round(sigma, 4)}**")
-        # st.markdown(f"### 99.9% Daily Value at Risk: **{round(VaR, 4)}**")
+
+        total = -bankroll / VaR
+        st.write("## Dollar amounts to hold")
+        dollar_amounts = {asset: round(total * w[i], 2) for i, asset in enumerate(display_assets) if
+                          np.abs(w[i]) > 0.001}
+        st.table(pd.DataFrame(list(dollar_amounts.items()), columns=['Asset', 'Dollar Amount']))
+
         data = {
             "Metric": ["Optimal growth rate", "Annual Drift", "Annual Volatility", "99.9% Daily Value at Risk"],
             "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4)]
@@ -165,9 +168,3 @@ if __name__ == "__main__":
         df = pd.DataFrame(data)
         # display the table
         st.table(df)
-
-        total = -bankroll / VaR
-        st.write("## Dollar amounts to hold")
-        dollar_amounts = {asset: round(total * w[i], 2) for i, asset in enumerate(display_assets) if
-                          np.abs(w[i]) > 0.001}
-        st.table(pd.DataFrame(list(dollar_amounts.items()), columns=['Asset', 'Dollar Amount']))
