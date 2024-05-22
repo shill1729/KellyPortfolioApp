@@ -186,7 +186,7 @@ if __name__ == "__main__":
         allocation_output = pd.DataFrame(allocation_output)
 
         st.table(allocation_output)
-
+        st.write("## Stats")
         metric_data = {
             "Metric": ["Optimal growth rate", "Annual Drift", "Annual Volatility", "99.9% Daily Value at Risk"],
             "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4)]
