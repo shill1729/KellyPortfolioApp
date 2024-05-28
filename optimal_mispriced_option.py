@@ -53,7 +53,7 @@ def compute_optimal_option_portfolio(options_data, S, mu, r, sigma):
     if result.success:
         return result.x, -result.fun
     else:
-        raise ValueError("Optimization failed")
+        return np.zeros(eta.shape), -np.inf
 
 
 def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5, use_market_ivs=True, otm=False):
