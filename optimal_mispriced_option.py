@@ -37,10 +37,10 @@ def compute_optimal_option_portfolio(options_data, S, mu, r, sigma):
 
     eta = compute_eta(mu, r, S, delta, V, sigma, implied_vol, gamma)
 
-    cons = {'type': 'eq', 'fun': constraint}
-    bounds = [(0., 1.)] * len(V)
+    # cons = {'type': 'eq', 'fun': constraint}
+    # bounds = [(0., 1.)] * len(V)
 
-    initial_alpha = np.ones(len(V)) / len(V)
+    # initial_alpha = np.ones(len(V)) / len(V)
 
     # result = minimize(lambda alpha: -growth_function(alpha, eta, sigma, S, delta, V),
     #                   initial_alpha, bounds=bounds, constraints=cons, options={"maxiter":500})
