@@ -4,6 +4,7 @@ from option_data_processing import get_option_chain, get_quote
 from black_scholes import bs_price, bs_delta, bs_gamma, implied_r, implied_iv
 from optport import mv_solver
 
+
 # Compute eta vector
 def compute_eta(mu, r, S, delta, V, sigma, implied_vol, gamma):
     return (mu - r) * S * (delta / V) + 0.5 * S ** 2 * (sigma ** 2 - implied_vol ** 2) * gamma / V
@@ -34,24 +35,25 @@ def compute_optimal_option_portfolio(options_data, S, mu, r, sigma):
     delta = options_data['delta'].values
     gamma = options_data['gamma'].values
     implied_vol = options_data['impliedVolatility'].values
-
     eta = compute_eta(mu, r, S, delta, V, sigma, implied_vol, gamma)
 
-    # cons = {'type': 'eq', 'fun': constraint}
-    # bounds = [(0., 1.)] * len(V)
+    # Quadratic programming fails, since the matrix is not PD
+    # Sigma = compute_sigma_matrix(delta, V) * S ** 2 * sigma ** 2
+    # x, fun = mv_solver(eta, Sigma)
+    # return x, fun
 
-    # initial_alpha = np.ones(len(V)) / len(V)
+    cons = {'type': 'eq', 'fun': constraint}
+    bounds = [(0., 1.)] * len(V)
 
-    # result = minimize(lambda alpha: -growth_function(alpha, eta, sigma, S, delta, V),
-    #                   initial_alpha, bounds=bounds, constraints=cons, options={"maxiter":500})
-    Sigma = compute_sigma_matrix(delta, V) * S**2 * sigma**2
-    x, fun = mv_solver(eta, Sigma)
-    return x, fun
-    # if result.success:
-    #     # return result.x, -result.fun
-    #     return x, fun
-    # else:
-    #     raise ValueError("Optimization failed")
+    initial_alpha = np.ones(len(V)) / len(V)
+
+    result = minimize(lambda alpha: -growth_function(alpha, eta, sigma, S, delta, V),
+                      initial_alpha, bounds=bounds, constraints=cons, options={"maxiter":500})
+
+    if result.success:
+        return result.x, -result.fun
+    else:
+        raise ValueError("Optimization failed")
 
 
 def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5, use_market_ivs=True, otm=False):
