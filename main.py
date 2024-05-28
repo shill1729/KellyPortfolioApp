@@ -9,6 +9,7 @@ from sdes import MultiGbm
 import finnhub
 import time
 from sklearn.linear_model import LinearRegression
+from optimal_mispriced_option import optimal_option_strategy
 
 rh_apr = 0.05
 rf_rate = np.log(1 + rh_apr)
@@ -110,8 +111,10 @@ if __name__ == "__main__":
     download_button = st.button("Download stocks")
     allocate_button = st.button("Allocate")
     market_regime_button = st.button("Market Regime")
+    option_portfolio = st.radio("Option portfolio", ("Off", "On"))
     beta_hedge = st.radio("Beta Hedge", ("Off", "On"))
     is_beta_hedge = beta_hedge == "On"
+    is_option_portfolio = option_portfolio == "On"
 
     if market_regime_button and not is_beta_hedge:
         # Reset to market regime tickers
@@ -143,22 +146,6 @@ if __name__ == "__main__":
             market_status = "Bull Market" if bull_allocations > 0.5 else "Bear Market"
             st.markdown(f"### Market Regime: **{market_status}**")
 
-        # st.write("## EWMA-GBM Allocations")
-        # if is_beta_hedge:
-        #     display_assets = [asset for asset in symbols if asset != "SPY"]
-        # else:
-        #     display_assets = symbols
-        # allocations = {asset: f"{w[i]:.2%}" for i, asset in enumerate(display_assets) if np.abs(w[i]) > 0.001}
-        # st.table(pd.DataFrame(list(allocations.items()), columns=['Asset', 'Allocation']))
-        #
-        # VaR = norm.ppf(0.001, loc=(mu - 0.5 * sigma ** 2) * st.session_state.timescale,
-        #                scale=sigma * np.sqrt(st.session_state.timescale))
-        #
-        # total = -bankroll / VaR
-        # st.write("## Dollar amounts to hold")
-        # dollar_amounts = {asset: round(total * w[i], 2) for i, asset in enumerate(display_assets) if
-        #                   np.abs(w[i]) > 0.001}
-        # st.table(pd.DataFrame(list(dollar_amounts.items()), columns=['Asset', 'Dollar Amount']))
         st.write("## EWMA-GBM Allocations")
 
         if is_beta_hedge:
@@ -195,3 +182,11 @@ if __name__ == "__main__":
         metric_data = pd.DataFrame(metric_data)
         # display the table
         st.table(metric_data)
+
+        if is_option_portfolio:
+            dominant_asset_index = np.argmax(w)
+            dominant_asset = display_assets[dominant_asset_index]
+            st.write(f"### Optimal Option Strategy for {dominant_asset}")
+            option_strategy, max_growth = optimal_option_strategy(dominant_asset, mu, sigma, rf_rate)
+            st.write(f"Expected max growth: {max_growth}")
+            st.table(option_strategy)
