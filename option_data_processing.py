@@ -48,7 +48,7 @@ def get_option_chain(ticker):
     options_data = pd.concat(options_data)
     options_data["mid"] = (options_data["bid"] + options_data["ask"]) / 2
     options_data["tte"] = time_to_expiration_series(options_data["expirationDate"])
-    return options_data
+    return options_data[options_data["inTheMoney"] == False]
 
 
 def print_options_data(options_data):
