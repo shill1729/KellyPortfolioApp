@@ -58,6 +58,7 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
     # Work with the specified expiration date
     expiration_date = options_data['expirationDate'].unique()[expiration_date_index]
     options_data_expiry = options_data[options_data['expirationDate'] == expiration_date].copy()
+    options_data_expiry = options_data_expiry.head(10)
 
     # Compute deltas, gammas, and implied risk-free rates for each option
     deltas = []
@@ -70,11 +71,11 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
         market_price = row['mid']
         implied_vol = row['impliedVolatility']
         option_type = row['option_type']
-
+        # Either us market volatilities and find implied rates to discount correctly for the greeks
         if use_market_ivs:
             r_implied = implied_r(S, K, T, market_price, implied_vol, option_type)
             implied_rs.append(r_implied)
-        else:
+        else: # or use the RH APR as the risk-free rate and back out new volatilities
             r_implied = r
             implied_vol = implied_iv(S, K, T, market_price, r, option_type)
             implied_vols_rh.append(implied_vol)
