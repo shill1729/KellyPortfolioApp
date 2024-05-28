@@ -57,7 +57,8 @@ def compute_optimal_option_portfolio(options_data, S, mu, r, sigma):
         return np.zeros(eta.shape), -np.inf
 
 
-def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5, use_market_ivs=True, otm=False):
+def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5, use_market_ivs=True,
+                            otm=False, r_lb=-10., r_ub=10., iv_ub=0.5):
     S = get_quote(ticker)
     options_data = get_option_chain(ticker, otm)
 
@@ -78,11 +79,11 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
         option_type = row['option_type']
         # Either us market volatilities and find implied rates to discount correctly for the greeks
         if use_market_ivs:
-            r_implied = implied_r(S, K, T, market_price, implied_vol, option_type)
+            r_implied = implied_r(S, K, T, market_price, implied_vol, option_type, r_lb, r_ub)
             implied_rs.append(r_implied)
         else: # or use the RH APR as the risk-free rate and back out new volatilities
             r_implied = r
-            implied_vol = implied_iv(S, K, T, market_price, r, option_type)
+            implied_vol = implied_iv(S, K, T, market_price, r, option_type, iv_ub)
             implied_vols_rh.append(implied_vol)
 
         delta = bs_delta(S, K, T, r_implied, implied_vol, option_type)

@@ -172,7 +172,10 @@ if __name__ == "__main__":
                                                                   rf_rate,
                                                                   expiration_date_index=expiry_index,
                                                                   use_market_ivs=is_market_rate,
-                                                                  otm=is_otm)
+                                                                  otm=is_otm,
+                                                                  r_lb=rate_lb,
+                                                                  r_ub=rate_ub,
+                                                                  iv_ub=iv_ub)
             st.write(f"Expected max growth: {max_growth}")
             st.write(f"Current EMA drift = {mu_ema}")
             st.write(f"Current EMA volatility = {sigma_ema}")
