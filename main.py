@@ -81,8 +81,8 @@ if __name__ == "__main__":
     option_portfolio = st.radio("Option portfolio", ("Off", "On"))
     market_rates = st.radio("Rates", ("Market", "RH"))
     beta_hedge = st.radio("Beta Hedge", ("Off", "On"))
-    itm = st.radio("Moneyness:", ("OTM", "ITM"))
-    is_itm = itm == "ITM"
+    otm = st.radio("Moneyness:", ("OTM", "ITM"))
+    is_otm = otm == "OTM"
     is_beta_hedge = beta_hedge == "On"
     is_option_portfolio = option_portfolio == "On"
     is_market_rate = market_rates == "Market"
@@ -172,7 +172,7 @@ if __name__ == "__main__":
                                                                   rf_rate,
                                                                   expiration_date_index=expiry_index,
                                                                   use_market_ivs=is_market_rate,
-                                                                  itm=is_itm)
+                                                                  otm=is_otm)
             st.write(f"Expected max growth: {max_growth}")
             st.write(f"Current EMA drift = {mu_ema}")
             st.write(f"Current EMA volatility = {sigma_ema}")
