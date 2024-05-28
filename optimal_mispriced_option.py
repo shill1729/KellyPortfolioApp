@@ -43,7 +43,7 @@ def compute_optimal_option_portfolio(options_data, S, mu, r, sigma):
     initial_alpha = np.ones(len(V)) / len(V)
 
     result = minimize(lambda alpha: -growth_function(alpha, eta, sigma, S, delta, V),
-                      initial_alpha, bounds=bounds, constraints=cons)
+                      initial_alpha, bounds=bounds, constraints=cons, options={"maxiter":500})
 
     if result.success:
         return result.x, -result.fun
