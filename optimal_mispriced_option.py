@@ -89,7 +89,7 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
     options_data_expiry['gamma'] = gammas
     options_data_expiry['implied_r'] = implied_rs
     if not use_market_ivs:
-        options_data_expiry['impliedVolatility'] = np.array(implied_vols_rh)
+        options_data_expiry.loc[:, 'impliedVolatility'] = np.array(implied_vols_rh)
 
     optimal_portfolio, max_growth = compute_optimal_option_portfolio(options_data_expiry, S, mu, r, sigma)
 
