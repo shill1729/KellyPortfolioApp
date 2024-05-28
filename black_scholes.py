@@ -34,7 +34,7 @@ def bs_gamma(S, K, T, r, sigma):
 
 
 # Function to compute the implied risk-free rate
-def implied_r(S, K, T, market_price, sigma, option_type='call', a=-20, b=20):
+def implied_r(S, K, T, market_price, sigma, option_type='call', a=-5., b=5.):
     def objective(r):
         return bs_price(S, K, T, r, sigma, option_type) - market_price
 
