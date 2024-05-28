@@ -98,9 +98,16 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
 
     # Filter and return only the rows with substantial non-zero allocations
     substantial_allocations = options_data_expiry[options_data_expiry['optimal_allocation'] > threshold]
-    return (substantial_allocations[["expirationDate", "strike", "mid", "lastPrice", "volume",
-                                    "openInterest", "impliedVolatility", "delta", "gamma",
-                                    "option_type", "implied_r", "optimal_allocation"]],
+    if use_market_ivs:
+        output = ["expirationDate", "strike", "mid", "lastPrice", "volume",
+                                        "openInterest", "impliedVolatility", "delta", "gamma",
+                                        "option_type", "implied_r", "optimal_allocation"]
+    else:
+        output = ["expirationDate", "strike", "mid", "lastPrice", "volume",
+                  "openInterest", "impliedVolatility", "fakeIV", "delta", "gamma",
+                  "option_type", "optimal_allocation"]
+
+    return (substantial_allocations[output],
             max_growth)
 
 
