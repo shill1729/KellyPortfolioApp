@@ -51,14 +51,13 @@ def compute_optimal_option_portfolio(options_data, S, mu, r, sigma):
         raise ValueError("Optimization failed")
 
 
-def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5, use_market_ivs=True):
+def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5, use_market_ivs=True, itm=False):
     S = get_quote(ticker)
-    options_data = get_option_chain(ticker)
+    options_data = get_option_chain(ticker, itm)
 
     # Work with the specified expiration date
     expiration_date = options_data['expirationDate'].unique()[expiration_date_index]
     options_data_expiry = options_data[options_data['expirationDate'] == expiration_date].copy()
-    options_data_expiry = options_data_expiry.head(5)
 
     # Compute deltas, gammas, and implied risk-free rates for each option
     deltas = []

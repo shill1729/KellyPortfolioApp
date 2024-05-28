@@ -27,7 +27,7 @@ def time_to_expiration_series(expiration_dates):
     return trading_years
 
 
-def get_option_chain(ticker):
+def get_option_chain(ticker, itm=False):
     # Download option chain data
     stock = yf.Ticker(ticker)
     option_dates = stock.options
@@ -48,7 +48,10 @@ def get_option_chain(ticker):
     options_data = pd.concat(options_data)
     options_data["mid"] = (options_data["bid"] + options_data["ask"]) / 2
     options_data["tte"] = time_to_expiration_series(options_data["expirationDate"])
-    return options_data[options_data["inTheMoney"] == False]
+    if itm:
+        return options_data[options_data["inTheMoney"] == False]
+    else:
+        return options_data
 
 
 def print_options_data(options_data):
