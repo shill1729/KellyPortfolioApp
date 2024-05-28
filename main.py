@@ -85,8 +85,8 @@ if __name__ == "__main__":
     is_option_portfolio = option_portfolio == "On"
     is_market_rate = market_rates == "Market"
     rate_lb = st.slider("LB for rate search", -20., 0., -1., 0.01)
-    rate_ub = st.slider("UB for rate search", 0., 20, 1., 0.01)
-    iv_ub = st.slider("UB for IV search", 0.01, 100, 0.3, 0.01)
+    rate_ub = st.slider("UB for rate search", 0., 20., 1., 0.01)
+    iv_ub = st.slider("UB for IV search", 0.01, 100., 0.3, 0.01)
 
 
     if market_regime_button and not is_beta_hedge:
