@@ -189,7 +189,7 @@ if __name__ == "__main__":
             sigma_ema = np.sqrt(np.diagonal(gbm.Sigma)[dominant_asset_index])
             dominant_asset = display_assets[dominant_asset_index]
             st.write(f"### Optimal Option Strategy for {dominant_asset}")
-            option_strategy, max_growth = optimal_option_strategy(dominant_asset, mu, sigma, rf_rate)
+            option_strategy, max_growth = optimal_option_strategy(dominant_asset, mu_ema, sigma_ema, rf_rate)
             st.write(f"Expected max growth: {max_growth}")
             st.write(f"Current EMA drift = {mu_ema}")
             st.write(f"Current EMA volatility = {sigma_ema}")
