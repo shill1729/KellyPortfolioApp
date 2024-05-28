@@ -40,3 +40,12 @@ def implied_r(S, K, T, market_price, sigma, option_type='call', a=-20, b=20):
 
     sol = root_scalar(objective, bracket=[a, b], method='brentq')
     return sol.root
+
+
+# Function to compute the implied risk-free rate
+def implied_iv(S, K, T, market_price, r, option_type='call', b=20):
+    def objective(sigma):
+        return bs_price(S, K, T, r, sigma, option_type) - market_price
+
+    sol = root_scalar(objective, bracket=[0.0001, b], method='brentq')
+    return sol.root

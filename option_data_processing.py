@@ -5,7 +5,6 @@ import finnhub
 import streamlit as st
 
 
-
 def get_quote(ticker):
     finnhub_client = finnhub.Client(api_key=st.secrets["FINNHUB_KEY"])
     quote = finnhub_client.quote(ticker)["c"]

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 from option_data_processing import get_option_chain, get_quote
-from black_scholes import bs_price, bs_delta, bs_gamma, implied_r
+from black_scholes import bs_price, bs_delta, bs_gamma, implied_r, implied_iv
 
 
 # Compute eta vector
@@ -51,7 +51,7 @@ def compute_optimal_option_portfolio(options_data, S, mu, r, sigma):
         raise ValueError("Optimization failed")
 
 
-def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5):
+def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5, use_market_ivs=True):
     S = get_quote(ticker)
     options_data = get_option_chain(ticker)
 
@@ -63,7 +63,7 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
     deltas = []
     gammas = []
     implied_rs = []
-
+    implied_vols_rh = []
     for index, row in options_data_expiry.iterrows():
         K = row['strike']
         T = row['tte']
@@ -71,8 +71,13 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
         implied_vol = row['impliedVolatility']
         option_type = row['option_type']
 
-        r_implied = implied_r(S, K, T, market_price, implied_vol, option_type)
-        implied_rs.append(r_implied)
+        if use_market_ivs:
+            r_implied = implied_r(S, K, T, market_price, implied_vol, option_type)
+            implied_rs.append(r_implied)
+        else:
+            r_implied = r
+            implied_vol = implied_iv(S, K, T, market_price, r, option_type)
+            implied_vols_rh.append(implied_vol)
 
         delta = bs_delta(S, K, T, r_implied, implied_vol, option_type)
         gamma = bs_gamma(S, K, T, r_implied, implied_vol)
@@ -83,6 +88,8 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
     options_data_expiry['delta'] = deltas
     options_data_expiry['gamma'] = gammas
     options_data_expiry['implied_r'] = implied_rs
+    if not use_market_ivs:
+        options_data_expiry['impliedVolatility'] = np.array(implied_vols_rh)
 
     optimal_portfolio, max_growth = compute_optimal_option_portfolio(options_data_expiry, S, mu, r, sigma)
 
