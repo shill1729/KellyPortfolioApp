@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import minimize
 from option_data_processing import get_option_chain, get_quote
 from black_scholes import bs_price, bs_delta, bs_gamma, implied_r, implied_iv
-
+from optport import mv_solver
 
 # Compute eta vector
 def compute_eta(mu, r, S, delta, V, sigma, implied_vol, gamma):
@@ -42,13 +42,16 @@ def compute_optimal_option_portfolio(options_data, S, mu, r, sigma):
 
     initial_alpha = np.ones(len(V)) / len(V)
 
-    result = minimize(lambda alpha: -growth_function(alpha, eta, sigma, S, delta, V),
-                      initial_alpha, bounds=bounds, constraints=cons, options={"maxiter":500})
-
-    if result.success:
-        return result.x, -result.fun
-    else:
-        raise ValueError("Optimization failed")
+    # result = minimize(lambda alpha: -growth_function(alpha, eta, sigma, S, delta, V),
+    #                   initial_alpha, bounds=bounds, constraints=cons, options={"maxiter":500})
+    Sigma = compute_sigma_matrix(delta, V) * S**2 * sigma**2
+    x, fun = mv_solver(eta, Sigma)
+    return x, fun
+    # if result.success:
+    #     # return result.x, -result.fun
+    #     return x, fun
+    # else:
+    #     raise ValueError("Optimization failed")
 
 
 def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, threshold=1e-5, use_market_ivs=True, otm=False):
