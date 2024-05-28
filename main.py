@@ -79,9 +79,11 @@ if __name__ == "__main__":
     allocate_button = st.button("Allocate")
     market_regime_button = st.button("Market Regime")
     option_portfolio = st.radio("Option portfolio", ("Off", "On"))
+    market_rates = st.radio("Rates", ("Market", "RH"))
     beta_hedge = st.radio("Beta Hedge", ("Off", "On"))
     is_beta_hedge = beta_hedge == "On"
     is_option_portfolio = option_portfolio == "On"
+    is_market_rate = market_rates == "Market"
 
     if market_regime_button and not is_beta_hedge:
         # Reset to market regime tickers
@@ -156,7 +158,9 @@ if __name__ == "__main__":
             sigma_ema = np.sqrt(np.diagonal(gbm.Sigma)[dominant_asset_index])
             dominant_asset = display_assets[dominant_asset_index]
             st.write(f"### Optimal Option Strategy for {dominant_asset}")
-            option_strategy, max_growth = optimal_option_strategy(dominant_asset, mu_ema, sigma_ema, rf_rate)
+
+            option_strategy, max_growth = optimal_option_strategy(dominant_asset, mu_ema, sigma_ema, rf_rate,
+                                                                  use_market_ivs=is_market_rate)
             st.write(f"Expected max growth: {max_growth}")
             st.write(f"Current EMA drift = {mu_ema}")
             st.write(f"Current EMA volatility = {sigma_ema}")
