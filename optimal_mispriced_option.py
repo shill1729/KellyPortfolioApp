@@ -64,7 +64,7 @@ def optimal_option_strategy(ticker, mu, sigma, r, expiration_date_index=0, thres
 
     # Work with the specified expiration date
     expiration_date = options_data['expirationDate'].unique()[expiration_date_index]
-    options_data_expiry = options_data[options_data['expirationDate'] == expiration_date].copy().head()
+    options_data_expiry = options_data[options_data['expirationDate'] == expiration_date].copy()
     # Compute deltas, gammas, and implied risk-free rates for each option
     deltas = []
     gammas = []
