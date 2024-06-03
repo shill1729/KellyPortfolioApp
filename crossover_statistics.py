@@ -56,7 +56,7 @@ def evaluate_accuracy(data, trend_length=6):
     correct_predictions = 0
     total_crossovers = len(data[data['positions'] != 0])
 
-    for i in range(1, len(data) - 6):  # Ensure we have enough data points for checking 5 days ahead
+    for i in range(1, len(data) - trend_length):  # Ensure we have enough data points for checking 5 days ahead
         if data['positions'].iloc[i] == 1:  # Bullish crossover
             if data['adj_close'].iloc[i + 1:i + trend_length].mean() > data['adj_close'].iloc[i]:  # Trend up over
                 # next 5 days
@@ -73,13 +73,13 @@ def evaluate_accuracy(data, trend_length=6):
 # Sample usage
 if __name__ == "__main__":
     # Load your data here. For example, using a CSV file:
-    data = pd.read_csv('~/downloads/spy.csv')
+    data = pd.read_csv('~/downloads/gme.csv')
 
     # Ensure your data has an 'adj_close' column with adjusted closing prices
 
-    short_window = 30
-    long_window = 250
-    trend_length = 21
+    short_window = 50
+    long_window = 200
+    trend_length = 2
 
     data = calculate_moving_averages(data, short_window, long_window)
     data = identify_crossovers(data)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
           f"max = {np.max(success_runs_down):.2f}")
 
     # Plotting the data
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 7))
+    fig, ax1 = plt.subplots(1, 1, figsize=(10, 7))
 
     ax1.plot(data['adj_close'], label='Adjusted Close Price')
     ax1.plot(data['short_ema'], label=f'{short_window}-day EMA')
@@ -112,6 +112,9 @@ if __name__ == "__main__":
     ax1.set_xlabel('Date')
     ax1.set_ylabel('Price')
     ax1.legend()
+    plt.show()
+
+    fig, (ax2, ax3) = plt.subplots(2, 1, figsize=(10, 7))
 
     # Plot histogram of success runs up
     ax2.hist(success_runs_up, bins=range(1, max(success_runs_up) + 2), edgecolor='black')
