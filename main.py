@@ -11,6 +11,7 @@ from sdes import MultiGbm
 from optimal_mispriced_option import optimal_option_strategy
 from constants import rf_rate
 
+
 def update_with_quotes(prices):
     today = dt.date.today()
     symbols = prices.columns
@@ -30,6 +31,7 @@ def update_with_quotes(prices):
 
     return prices
 
+
 @st.cache_data(show_spinner=False)
 def download_data(symbols):
     api = av.av()
@@ -44,6 +46,7 @@ def download_data(symbols):
         st.write("Previous Close Prices:")
         st.write(data.iloc[-1, :])
     return data, av.timescale("daily", None, "stocks")
+
 
 if __name__ == "__main__":
     gbm = MultiGbm()

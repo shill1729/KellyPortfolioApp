@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from optport import mv_solver
 from constants import daily_apr, rf_rate
+import streamlit as st
 
 
 def compute_allocations(prices, gbm, ema_filter=0.0, timescale=1 / 252, beta_hedge=False):

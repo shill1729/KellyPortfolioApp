@@ -37,8 +37,8 @@ def ewmc(X, alpha=0.07):
 
     N = X.shape[0]
     # Center data with either naive estimate or ema-estimate of mean.
-    a1 = X-X.apply(np.mean, 0)
-    # a1 = X - ema(X, alpha)
+    # a1 = X-X.apply(np.mean, 0)
+    a1 = X - ema(X, alpha)
 
     # Compute weights
     ws = (1 - alpha) ** (np.arange(0, N))
