@@ -12,79 +12,45 @@ from optimal_mispriced_option import optimal_option_strategy
 from constants import rf_rate
 
 
-# def update_with_quotes(prices):
-#     today = dt.date.today()
-#     symbols = prices.columns
-#     quotes = []
-#     finnhub_client = finnhub.Client(api_key=st.secrets["FINNHUB_KEY"])
-#     for symbol in symbols:
-#         quote = finnhub_client.quote(symbol)["c"]
-#         quotes.append(quote)
-#         time.sleep(1 / len(symbols))
-#     new_row = pd.DataFrame([quotes], columns=symbols, index=[today])
-#     st.session_state.quotes = new_row
-#
-#     if today in prices.index:
-#         prices.loc[today] = quotes
-#     else:
-#         prices = pd.concat([prices, new_row])
-#
-#     return prices
+# Utility functions
+def fetch_quotes(symbols):
+    """Fetch the latest quotes for given symbols using Finnhub."""
+    finnhub_client = finnhub.Client(api_key=st.secrets["FINNHUB_KEY"])
+    quotes = {}
+    for symbol in symbols:
+        try:
+            quote = finnhub_client.quote(symbol)["c"]
+            quotes[symbol] = quote
+            time.sleep(1 / len(symbols))  # Throttle API requests
+        except Exception as e:
+            st.error(f"Error fetching data for {symbol}: {e}")
+    return quotes
+
+
 def update_with_quotes(prices):
+    """Update prices DataFrame with the latest quotes."""
     today = dt.date.today()
     symbols = prices.columns
-    quotes = []
-    finnhub_client = finnhub.Client(api_key=st.secrets["FINNHUB_KEY"])
 
-    for symbol in symbols:
-        quote = finnhub_client.quote(symbol)["c"]
-        quotes.append(quote)
-        time.sleep(1 / len(symbols))
+    quotes = fetch_quotes(symbols)
+    if not quotes:
+        st.warning("No new quotes fetched.")
+        return prices
 
-    new_row = pd.DataFrame([quotes], columns=symbols, index=[today])
+    new_row = pd.DataFrame([quotes], index=[today])
     st.session_state.quotes = new_row
 
-    if today in prices.index:
-        st.write(f"🟡 Updating existing row for {today}")
-        prices.loc[today] = quotes  # Replace existing row
-    else:
-        st.write(f"🟢 Adding new row for {today}")
-        prices = pd.concat([prices, new_row])
-
+    prices = prices.combine_first(new_row)
     return prices
 
 
-# @st.cache_data(show_spinner=False)
-# def download_data(symbols):
-#     api = av.av()
-#     api.log_in(st.secrets["AV_API_KEY"])
-#
-#     data = api.get_assets(symbols, "daily", None, True, "adjusted_close")
-#     now = dt.datetime.now().astimezone(dt.timezone(dt.timedelta(hours=-4)))
-#     is_market_hours = now.weekday() < 5 and dt.time(9, 30) <= now.time() <= dt.time(18, 0)
-#
-#     if is_market_hours:
-#         data = update_with_quotes(data)
-#     else:
-#         st.write("Previous Close Prices:")
-#         st.write(data.iloc[-1, :])
-#     return data, av.timescale("daily", None, "stocks")
 @st.cache_data(show_spinner=False)
 def download_data(symbols):
+    """Download historical data for the given symbols."""
     api = av.av()
     api.log_in(st.secrets["AV_API_KEY"])
 
     data = api.get_assets(symbols, "daily", None, True, "adjusted_close")
-
-    last_date = data.index[-1]  # Last available historical date
-    today = dt.date.today()
-    st.write(f"Last historical date available: {last_date}, Today's date: {today}")
-
-    if last_date < today:
-        st.write("✅ Historical data is up to date.")
-    else:
-        st.write("⚠️ Warning: Historical data might be stale!")
-
     now = dt.datetime.now().astimezone(dt.timezone(dt.timedelta(hours=-4)))
     is_market_hours = now.weekday() < 5 and dt.time(9, 30) <= now.time() <= dt.time(18, 0)
 
@@ -93,17 +59,21 @@ def download_data(symbols):
     else:
         st.write("Previous Close Prices:")
         st.write(data.iloc[-1, :])
-
     return data, av.timescale("daily", None, "stocks")
 
 
-if __name__ == "__main__":
+# Main Streamlit application
+def main():
+    """Main function to render Streamlit app."""
     gbm = MultiGbm()
     st.title("Optimal Log Growth Allocations")
+
+    # Input Section
     default_ticker_list = "TSLA, AMC, GME, NKLA, GOTU, NVDA, AAPL, DIS, ROKU, AMZN"
     ticker_list = st.text_input("Enter a comma-separated list of tickers", default_ticker_list)
     symbols = [s.strip() for s in ticker_list.split(",")]
 
+    # Initialize session state
     if 'historical_data' not in st.session_state:
         st.session_state.historical_data = None
 
@@ -113,6 +83,7 @@ if __name__ == "__main__":
     if 'quotes' not in st.session_state:
         st.session_state.quotes = pd.DataFrame(columns=symbols)
 
+    # Inputs for configurations
     ema_filter = st.slider("Select the EMA filter parameter:", 0.0, 1.0, 0.1, 0.01)
     bankroll = st.number_input("99% VaR dollar amount:", value=100., min_value=1., max_value=5000., step=1.)
     download_button = st.button("Download stocks")
@@ -127,9 +98,9 @@ if __name__ == "__main__":
     rate_ub = st.slider("UB for rate search", 0., 20., 1., 0.01)
     iv_ub = st.slider("UB for IV search", 0.01, 100., 0.3, 0.01)
 
-    if market_regime_button and beta_hedge == "Off":
-        symbols = ["SPY", "TLT", "SHY", "VXX"]
-        st.session_state.historical_data, st.session_state.timescale = download_data(symbols)
+    # Button Actions
+    if market_regime_button:
+        st.session_state.historical_data, st.session_state.timescale = download_data(["SPY", "TLT", "SHY", "VXX"])
         st.write("Market regime data downloaded successfully.")
 
     if download_button:
@@ -139,27 +110,29 @@ if __name__ == "__main__":
     if allocate_button or market_regime_button:
         st.session_state.historical_data = update_with_quotes(st.session_state.historical_data)
 
-        st.write("## Most recent quotes")
+        st.write("## Most Recent Quotes")
         st.dataframe(st.session_state.quotes)
 
+        # Extend symbols if beta hedge is on
         if beta_hedge == "On":
             beta_symbols = ["SPY"] + symbols + ["VXX"]
             st.session_state.historical_data, st.session_state.timescale = download_data(beta_symbols)
             symbols = beta_symbols
 
-        w, g, mu, sigma = compute_allocations(st.session_state.historical_data, gbm, ema_filter,
-                                              st.session_state.timescale, beta_hedge=beta_hedge == "On")
+        # Compute allocations
+        w, g, mu, sigma = compute_allocations(
+            st.session_state.historical_data, gbm, ema_filter,
+            st.session_state.timescale, beta_hedge=(beta_hedge == "On")
+        )
 
+        # Display Market Regime
         if market_regime_button:
-            bull_market = ["SPY"]
-            bull_allocations = sum([w[i] for i, asset in enumerate(symbols) if asset in bull_market])
+            bull_allocations = sum([w[i] for i, asset in enumerate(symbols) if asset == "SPY"])
             market_status = "Bull Market" if bull_allocations > 0.5 else "Bear Market"
             st.markdown(f"### Market Regime: **{market_status}**")
 
-        st.write("## EWMA-GBM Allocations")
-
+        # Display Allocations
         display_assets = [asset for asset in symbols if asset != "SPY"] if beta_hedge == "On" else symbols
-
         allocations = {asset: f"{w[i]:.2%}" for i, asset in enumerate(display_assets) if np.abs(w[i]) > 0.001}
 
         VaR = norm.ppf(0.001, loc=(mu - 0.5 * sigma ** 2) * st.session_state.timescale,
@@ -192,17 +165,18 @@ if __name__ == "__main__":
             dominant_asset = display_assets[dominant_asset_index]
             st.write(f"### Optimal Option Strategy for {dominant_asset}")
 
-            option_strategy, max_growth = optimal_option_strategy(dominant_asset,
-                                                                  mu_ema,
-                                                                  sigma_ema,
-                                                                  rf_rate,
-                                                                  expiration_date_index=expiry_index,
-                                                                  use_market_ivs=market_rates == "Market",
-                                                                  otm=otm == "OTM",
-                                                                  r_lb=rate_lb,
-                                                                  r_ub=rate_ub,
-                                                                  iv_ub=iv_ub)
+            option_strategy, max_growth = optimal_option_strategy(
+                dominant_asset, mu_ema, sigma_ema, rf_rate,
+                expiration_date_index=expiry_index,
+                use_market_ivs=(market_rates == "Market"),
+                otm=(otm == "OTM"),
+                r_lb=rate_lb, r_ub=rate_ub, iv_ub=iv_ub
+            )
             st.write(f"Expected max growth: {max_growth}")
             st.write(f"Current EMA drift = {mu_ema}")
             st.write(f"Current EMA volatility = {sigma_ema}")
             st.table(option_strategy)
+
+
+if __name__ == "__main__":
+    main()

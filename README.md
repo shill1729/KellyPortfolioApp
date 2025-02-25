@@ -13,7 +13,7 @@ where $\mu(t, s_.)$ and $\sigma(t, s_.)$ are previsible path functionals.
 Here, we model the stock 
 prices as a multivariate GBM where the drift vector and volatility 
 matrix coefficients are estimated using exponentially weighted moving averages (EWMAs). 
-The optimizaiton problem to solve is then the quadratic problem
+The optimization problem to solve is then the quadratic problem
 
 $$\max_{\alpha \in C} \mu^T \alpha - \frac12 \alpha^T \Sigma \alpha$$
 
