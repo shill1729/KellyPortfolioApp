@@ -12,79 +12,32 @@ from optimal_mispriced_option import optimal_option_strategy
 from constants import rf_rate
 
 
-# def update_with_quotes(prices):
-#     today = dt.date.today()
-#     symbols = prices.columns
-#     quotes = []
-#     finnhub_client = finnhub.Client(api_key=st.secrets["FINNHUB_KEY"])
-#     for symbol in symbols:
-#         quote = finnhub_client.quote(symbol)["c"]
-#         quotes.append(quote)
-#         time.sleep(1 / len(symbols))
-#     new_row = pd.DataFrame([quotes], columns=symbols, index=[today])
-#     st.session_state.quotes = new_row
-#
-#     if today in prices.index:
-#         prices.loc[today] = quotes
-#     else:
-#         prices = pd.concat([prices, new_row])
-#
-#     return prices
 def update_with_quotes(prices):
     today = dt.date.today()
     symbols = prices.columns
     quotes = []
     finnhub_client = finnhub.Client(api_key=st.secrets["FINNHUB_KEY"])
-
     for symbol in symbols:
         quote = finnhub_client.quote(symbol)["c"]
         quotes.append(quote)
         time.sleep(1 / len(symbols))
-
     new_row = pd.DataFrame([quotes], columns=symbols, index=[today])
     st.session_state.quotes = new_row
 
     if today in prices.index:
-        st.write(f"🟡 Updating existing row for {today}")
-        prices.loc[today] = quotes  # Replace existing row
+        prices.loc[today] = quotes
     else:
-        st.write(f"🟢 Adding new row for {today}")
         prices = pd.concat([prices, new_row])
 
     return prices
 
 
-# @st.cache_data(show_spinner=False)
-# def download_data(symbols):
-#     api = av.av()
-#     api.log_in(st.secrets["AV_API_KEY"])
-#
-#     data = api.get_assets(symbols, "daily", None, True, "adjusted_close")
-#     now = dt.datetime.now().astimezone(dt.timezone(dt.timedelta(hours=-4)))
-#     is_market_hours = now.weekday() < 5 and dt.time(9, 30) <= now.time() <= dt.time(18, 0)
-#
-#     if is_market_hours:
-#         data = update_with_quotes(data)
-#     else:
-#         st.write("Previous Close Prices:")
-#         st.write(data.iloc[-1, :])
-#     return data, av.timescale("daily", None, "stocks")
 @st.cache_data(show_spinner=False)
 def download_data(symbols):
     api = av.av()
     api.log_in(st.secrets["AV_API_KEY"])
 
     data = api.get_assets(symbols, "daily", None, True, "adjusted_close")
-
-    last_date = data.index[-1]  # Last available historical date
-    today = dt.date.today()
-    st.write(f"Last historical date available: {last_date}, Today's date: {today}")
-
-    if last_date < today:
-        st.write("✅ Historical data is up to date.")
-    else:
-        st.write("⚠️ Warning: Historical data might be stale!")
-
     now = dt.datetime.now().astimezone(dt.timezone(dt.timedelta(hours=-4)))
     is_market_hours = now.weekday() < 5 and dt.time(9, 30) <= now.time() <= dt.time(18, 0)
 
@@ -93,7 +46,6 @@ def download_data(symbols):
     else:
         st.write("Previous Close Prices:")
         st.write(data.iloc[-1, :])
-
     return data, av.timescale("daily", None, "stocks")
 
 
