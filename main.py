@@ -5,11 +5,23 @@ import pandas as pd
 import alphavantage.av as av
 import finnhub
 import time
+import pandas_market_calendars as mcal
 from scipy.stats import norm
 from allocator import compute_allocations
 from sdes import MultiGbm
 from optimal_mispriced_option import optimal_option_strategy
 from constants import rf_rate
+
+
+def get_last_trading_day(today: dt.date) -> dt.date:
+    # Example: using NYSE calendar
+    nyse = mcal.get_calendar('NYSE')
+    # For safety, look up to a week in the past in case 'today' is a Monday or holiday
+    schedule = nyse.valid_days(start_date=today - dt.timedelta(days=7), end_date=today)
+    if schedule.empty:
+        # Fallback: if something's off with the schedule, just return 'today'
+        return today
+    return schedule[-1].date()  # The last valid trading date in that range
 
 
 def update_with_quotes(prices):
@@ -32,21 +44,52 @@ def update_with_quotes(prices):
     return prices
 
 
+# @st.cache_data(show_spinner=False)
+# def download_data(symbols):
+#     api = av.av()
+#     api.log_in(st.secrets["AV_API_KEY"])
+#
+#     data = api.get_assets(symbols, "daily", None, True, "adjusted_close")
+#     now = dt.datetime.now().astimezone(dt.timezone(dt.timedelta(hours=-4)))
+#     is_market_hours = now.weekday() < 5 and dt.time(9, 30) <= now.time() <= dt.time(18, 0)
+#
+#     if is_market_hours:
+#         data = update_with_quotes(data)
+#     else:
+#         st.write("Previous Close Prices:")
+#         st.write(data.iloc[-1, :])
+#     return data, av.timescale("daily", None, "stocks")
 @st.cache_data(show_spinner=False)
-def download_data(symbols):
+def download_data(symbols, last_downloaded_date=None):
+    """
+    Download historical data from AlphaVantage for the given symbols,
+    but only if we do not already have the last trading day's data.
+    """
+    today = dt.date.today()
+    last_trading_day = get_last_trading_day(today)
+
+    # Check if we already have the latest data in session_state
+    if last_downloaded_date is not None and last_downloaded_date >= last_trading_day:
+        st.write(f"Using cached historical data from {last_downloaded_date}.")
+        return st.session_state.historical_data
+
+    # Otherwise, fetch new data
     api = av.av()
     api.log_in(st.secrets["AV_API_KEY"])
 
+    # Fetch fresh historical data
     data = api.get_assets(symbols, "daily", None, True, "adjusted_close")
-    now = dt.datetime.now().astimezone(dt.timezone(dt.timedelta(hours=-4)))
-    is_market_hours = now.weekday() < 5 and dt.time(9, 30) <= now.time() <= dt.time(18, 0)
 
-    if is_market_hours:
-        data = update_with_quotes(data)
+    # The last date in the DataFrame
+    if not data.empty:
+        latest_data_date = data.index[-1].date()
     else:
-        st.write("Previous Close Prices:")
-        st.write(data.iloc[-1, :])
-    return data, av.timescale("daily", None, "stocks")
+        latest_data_date = today  # fallback if data returned is empty
+
+    st.session_state.last_downloaded_date = latest_data_date
+    st.session_state.historical_data = data
+
+    return data
 
 
 if __name__ == "__main__":
