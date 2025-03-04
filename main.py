@@ -109,19 +109,19 @@ if __name__ == "__main__":
     if 'quotes' not in st.session_state:
         st.session_state.quotes = pd.DataFrame(columns=symbols)
 
-    ema_filter = st.slider("Select the EMA filter parameter:", 0.0, 1.0, 0.1, 0.01)
-    bankroll = st.number_input("99% VaR dollar amount:", value=100., min_value=1., max_value=5000., step=1.)
-    download_button = st.button("Download stocks")
-    allocate_button = st.button("Allocate")
-    market_regime_button = st.button("Market Regime")
-    option_portfolio = st.radio("Option portfolio", ("Off", "On"))
-    market_rates = st.radio("Rates", ("Market", "RH"))
-    beta_hedge = st.radio("Beta Hedge", ("Off", "On"))
-    otm = st.radio("Moneyness:", ("OTM", "ITM"))
-    expiry_index = st.number_input("Expiry index", 0, 30, 0, 1)
-    rate_lb = st.slider("LB for rate search", -20., 0., -1., 0.01)
-    rate_ub = st.slider("UB for rate search", 0., 20., 1., 0.01)
-    iv_ub = st.slider("UB for IV search", 0.01, 100., 0.3, 0.01)
+    ema_filter = st.sidebar.slider("Select the EMA filter parameter:", 0.0, 1.0, 0.1, 0.01)
+    bankroll = st.sidebar.number_input("99% VaR dollar amount:", value=100., min_value=1., max_value=5000., step=1.)
+    download_button = st.sidebar.button("Download stocks")
+    allocate_button = st.sidebar.button("Allocate")
+    market_regime_button = st.sidebar.button("Market Regime")
+    option_portfolio = st.sidebar.radio("Option portfolio", ("Off", "On"))
+    market_rates = st.sidebar.radio("Rates", ("Market", "RH"))
+    beta_hedge = st.sidebar.radio("Beta Hedge", ("Off", "On"))
+    otm = st.sidebar.radio("Moneyness:", ("OTM", "ITM"))
+    expiry_index = st.sidebar.number_input("Expiry index", 0, 30, 0, 1)
+    rate_lb = st.sidebar.slider("LB for rate search", -20., 0., -1., 0.01)
+    rate_ub = st.sidebar.slider("UB for rate search", 0., 20., 1., 0.01)
+    iv_ub = st.sidebar.slider("UB for IV search", 0.01, 100., 0.3, 0.01)
 
     if market_regime_button and beta_hedge == "Off":
         symbols = ["SPY", "TLT", "SHY", "VXX"]
