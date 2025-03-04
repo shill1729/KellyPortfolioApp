@@ -97,7 +97,7 @@ if __name__ == "__main__":
     gbm = MultiGbm()
     st.title("Optimal Log Growth Allocations")
     default_ticker_list = "tsla, amc, aapl"
-    ticker_list = st.text_input("Enter a comma-separated list of tickers", default_ticker_list)
+    ticker_list = st.sidebar.text_input("Enter a comma-separated list of tickers", default_ticker_list)
     symbols = [s.strip().upper() for s in ticker_list.split(",")]
 
     if 'historical_data' not in st.session_state:
