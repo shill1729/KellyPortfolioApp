@@ -89,7 +89,7 @@ def download_data(symbols, last_downloaded_date=None):
     st.session_state.last_downloaded_date = latest_data_date
     st.session_state.historical_data = data
 
-    return data
+    return data, av.timescale("daily", None, "stocks")
 
 
 if __name__ == "__main__":
