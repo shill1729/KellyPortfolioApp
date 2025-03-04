@@ -7,3 +7,4 @@ numpy~=1.26.4
 streamlit~=1.37.0
 pandas~=2.2.2
 yfinance~=0.2.40
+pandas-market-calendars
