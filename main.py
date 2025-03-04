@@ -13,6 +13,7 @@ from optimal_mispriced_option import optimal_option_strategy
 from constants import rf_rate
 
 
+
 def get_last_trading_day(today: dt.date) -> dt.date:
     # Example: using NYSE calendar
     nyse = mcal.get_calendar('NYSE')
@@ -95,9 +96,9 @@ def download_data(symbols, last_downloaded_date=None):
 if __name__ == "__main__":
     gbm = MultiGbm()
     st.title("Optimal Log Growth Allocations")
-    default_ticker_list = "TSLA, AMC, GME, NKLA, GOTU, NVDA, AAPL, DIS, ROKU, AMZN"
+    default_ticker_list = "tsla, amc, aapl"
     ticker_list = st.text_input("Enter a comma-separated list of tickers", default_ticker_list)
-    symbols = [s.strip() for s in ticker_list.split(",")]
+    symbols = [s.strip().upper() for s in ticker_list.split(",")]
 
     if 'historical_data' not in st.session_state:
         st.session_state.historical_data = None
