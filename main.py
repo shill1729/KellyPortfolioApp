@@ -89,6 +89,8 @@ def download_data(symbols, last_downloaded_date=None):
 
     st.session_state.last_downloaded_date = latest_data_date
     st.session_state.historical_data = data
+    st.write("Previous Close Prices:")
+    st.write(data.iloc[-1, :])
 
     return data, av.timescale("daily", None, "stocks")
 
