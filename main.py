@@ -98,7 +98,7 @@ def download_data(symbols, last_downloaded_date=None):
 if __name__ == "__main__":
     gbm = MultiGbm()
     st.title("Optimal Log Growth Allocations")
-    default_ticker_list = "ntwk, bud, pfe, nke, ko, gis, nvda, pltr, snow, tdg, noc, gd, gme, tsla, mu, avgo"
+    default_ticker_list = "wmt, cost, pg, ko, pep, mo, pm, cl, gis, clx, lmt, noc, gd, rtx, ba"
     ticker_list = st.sidebar.text_input("Enter a comma-separated list of tickers", default_ticker_list)
     symbols = [s.strip().upper() for s in ticker_list.split(",")]
 
