@@ -190,7 +190,7 @@ if __name__ == "__main__":
         st.write("## Stats")
         metric_data = pd.DataFrame({
             "Metric": ["Optimal growth rate", "Annual Drift", "Annual Volatility", "99.9% Daily Value at Risk", "Chance to hit "+str(a)+" before "+str(b), "Sharpe ratio"],
-            "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4), round(hit_a_before_b, 2), round(sharpe_ratio)]
+            "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4), round(hit_a_before_b, 2), round(sharpe_ratio, 5)]
         })
 
         st.table(metric_data)
