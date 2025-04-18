@@ -160,6 +160,7 @@ if __name__ == "__main__":
             b = 2*spot
         hit_a_before_b = (spot**gamma-b**gamma)/(a**gamma-b**gamma)
         sharpe_ratio = 0.5*((dom_asset_drift-rf_rate)/dom_asset_vol)**2
+        vol_drag = dom_asset_drift-0.5*dom_asset_vol**2
         if market_regime_button:
             bull_market = ["SPY"]
             bull_allocations = sum([w[i] for i, asset in enumerate(symbols) if asset in bull_market])
@@ -189,8 +190,10 @@ if __name__ == "__main__":
         st.table(allocation_output)
         st.write("## Stats")
         metric_data = pd.DataFrame({
-            "Metric": ["Optimal growth rate", "Annual Drift", "Annual Volatility", "99.9% Daily Value at Risk", "Chance to hit "+str(a)+" before "+str(b), "Sharpe ratio"],
-            "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4), round(hit_a_before_b, 2), round(sharpe_ratio, 5)]
+            "Metric": ["Optimal growth rate", "Annual Drift", "Annual Volatility", "99.9% Daily Value at Risk",
+                       "Chance to hit "+str(a)+" before "+str(b), "Sharpe ratio", "Drift-Vol-Drag"],
+            "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4),
+                      round(hit_a_before_b, 2), round(sharpe_ratio, 5), round(vol_drag, 4)]
         })
 
         st.table(metric_data)
