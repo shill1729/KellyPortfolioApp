@@ -159,7 +159,7 @@ if __name__ == "__main__":
         if b < spot:
             b = 2*spot
         hit_a_before_b = (spot**gamma-b**gamma)/(a**gamma-b**gamma)
-        sharpe_ratio = dom_asset_drift-0.5*dom_asset_vol**2
+        sharpe_ratio = 0.5*(dom_asset_drift/dom_asset_vol)**2
         if market_regime_button:
             bull_market = ["SPY"]
             bull_allocations = sum([w[i] for i, asset in enumerate(symbols) if asset in bull_market])
