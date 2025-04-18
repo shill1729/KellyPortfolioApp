@@ -115,6 +115,8 @@ if __name__ == "__main__":
     bankroll = st.sidebar.number_input("99% VaR dollar amount:", value=100., min_value=1., max_value=5000., step=1.)
     download_button = st.sidebar.button("Download stocks")
     allocate_button = st.sidebar.button("Allocate")
+    a = st.sidebar.number_input("Lower bound", min_value=0.01, max_value=10000., value=50.)
+    b = st.sidebar.number_input("Upper bound", min_value=0.01, max_value=10000., value=900.)
     market_regime_button = st.sidebar.button("Market Regime")
     option_portfolio = st.sidebar.radio("Option portfolio", ("Off", "On"))
     market_rates = st.sidebar.radio("Rates", ("Market", "RH"))
@@ -144,10 +146,19 @@ if __name__ == "__main__":
             beta_symbols = ["SPY"] + symbols + ["VXX"]
             st.session_state.historical_data, st.session_state.timescale = download_data(beta_symbols)
             symbols = beta_symbols
-
-        w, g, mu, sigma = compute_allocations(st.session_state.historical_data, gbm, ema_filter,
+        # TODO: add P_x(T_a < T_b) chance of hitting a before b.
+        w, g, mu, sigma, gbm = compute_allocations(st.session_state.historical_data, gbm, ema_filter,
                                               st.session_state.timescale, beta_hedge=beta_hedge == "On")
-
+        dom_asset_index = np.argmax(w)
+        dom_asset_drift = gbm.drift[dom_asset_index]
+        dom_asset_vol = np.sqrt(gbm.Sigma[dom_asset_index, dom_asset_index])
+        gamma = 1-2*dom_asset_drift/dom_asset_vol**2
+        spot = st.session_state.historical_data.iloc[-1, dom_asset_index]
+        if a > spot:
+            a = spot/2
+        if b < spot:
+            b = 2*spot
+        hit_a_before_b = (spot**gamma-b**gamma)/(a**gamma-b**gamma)
         if market_regime_button:
             bull_market = ["SPY"]
             bull_allocations = sum([w[i] for i, asset in enumerate(symbols) if asset in bull_market])
@@ -177,8 +188,8 @@ if __name__ == "__main__":
         st.table(allocation_output)
         st.write("## Stats")
         metric_data = pd.DataFrame({
-            "Metric": ["Optimal growth rate", "Annual Drift", "Annual Volatility", "99.9% Daily Value at Risk"],
-            "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4)]
+            "Metric": ["Optimal growth rate", "Annual Drift", "Annual Volatility", "99.9% Daily Value at Risk", "Chance to hit "+str(a)+" before "+str(b)],
+            "Value": [round(g, 6), round(mu, 4), round(sigma, 4), round(VaR, 4), round(hit_a_before_b, 2)]
         })
 
         st.table(metric_data)
@@ -203,4 +214,5 @@ if __name__ == "__main__":
             st.write(f"Expected max growth: {max_growth}")
             st.write(f"Current EMA drift = {mu_ema}")
             st.write(f"Current EMA volatility = {sigma_ema}")
+
             st.table(option_strategy)

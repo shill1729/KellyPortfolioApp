@@ -31,4 +31,4 @@ def compute_allocations(prices, gbm, ema_filter=0.0, timescale=1 / 252, beta_hed
 
     mu = w.dot(gbm.drift - rf_rate)
     sigma = np.sqrt((w.T.dot(gbm.Sigma)).dot(w))
-    return w, g, mu, sigma
+    return w, g, mu, sigma, gbm
